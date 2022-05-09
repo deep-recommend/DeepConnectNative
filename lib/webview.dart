@@ -1,12 +1,13 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class WebView extends StatefulWidget {
+class WebViewCmp extends StatefulWidget {
   @override
   WebViewState createState() => WebViewState();
 }
 
-class WebViewState extends State<WebView> {
+class WebViewState extends State<WebViewCmp> {
   @override
   void initState() {
     super.initState();
