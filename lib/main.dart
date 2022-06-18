@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,12 +17,28 @@ late WebViewController _controller;
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+  final MaterialColor materialWhite = const MaterialColor(
+    0xFFFFFFFF,
+    const <int, Color>{
+      50: const Color(0xFFFFFFFF),
+      100: const Color(0xFFFFFFFF),
+      200: const Color(0xFFFFFFFF),
+      300: const Color(0xFFFFFFFF),
+      400: const Color(0xFFFFFFFF),
+      500: const Color(0xFFFFFFFF),
+      600: const Color(0xFFFFFFFF),
+      700: const Color(0xFFFFFFFF),
+      800: const Color(0xFFFFFFFF),
+      900: const Color(0xFFFFFFFF),
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DeepConnect',
       theme: ThemeData(
-        primarySwatch: Colors.grey,
+        primarySwatch: materialWhite,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -38,23 +55,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _resumeApp() {
-    _controller.evaluateJavascript("onResumeApp();");
+  _launchUrl(String url) async {
+    final Uri _url = Uri.parse(url);
+    if (await canLaunchUrl(_url)) {
+      await launchUrl(_url);
+    }
+  }
+
+  Future<void> _resumeApp() async {
+    await _controller.evaluateJavascript("onResumeApp();");
   }
   
-  void _returnApp() {
-    _controller.evaluateJavascript("onReturnApp();");
+  Future<void> _returnApp() async {
+    await _controller.evaluateJavascript("onReturnApp();");
   }
 
   Future<bool> _isDeepConnectUrl() async {
     final currentUrl = await _controller.currentUrl();
     String url = currentUrl.toString().substring(0, 29);
-    bool isDeepConnectUrl = url == "https://www.deep-matching.com";
-    return isDeepConnectUrl;
+    return url == "https://www.deep-matching.com";
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.inactive:
         break;
@@ -62,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case AppLifecycleState.resumed:
         print('lifecycle:resumed');
-        _resumeApp();
+        await _resumeApp();
         break;
       case AppLifecycleState.detached:
         break;
@@ -71,39 +94,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-        future: _isDeepConnectUrl(),
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.data ?? true) {
-            return Scaffold(
-              body: WebView(
-                initialUrl: 'https://deep-matching.com',
-                javascriptMode: JavascriptMode.unrestricted,
-                onWebViewCreated: (WebViewController webViewController) async {
-                  _controller = webViewController;
-                },
-              ),
-            );
+    return Scaffold(
+      body: WebView(
+        initialUrl: 'https://deep-matching.com',
+        javascriptMode: JavascriptMode.unrestricted,
+        onWebViewCreated: (WebViewController webViewController) async {
+          _controller = webViewController;
+        },
+        navigationDelegate: (NavigationRequest request) {
+          String wwwUrl = request.url.toString().substring(0, 29);
+          String url = request.url.toString().substring(0, 25);
+          bool isDeepConnectUrl = wwwUrl == 'https://www.deep-matching.com' || url == 'https://deep-matching.com';
+          if (isDeepConnectUrl) {
+            return NavigationDecision.navigate;
           } else {
-            return Scaffold(
-              appBar: AppBar(
-                  leading: IconButton(
-                    onPressed: () {
-                      _returnApp();
-                    },
-                    icon: Icon(Icons.arrow_back_ios),
-                  ),
-              ),
-              body: WebView(
-                initialUrl: 'https://deep-matching.com',
-                javascriptMode: JavascriptMode.unrestricted,
-                onWebViewCreated: (WebViewController webViewController) async {
-                  _controller = webViewController;
-                },
-              ),
-            );
+            _launchUrl(request.url);
+            return NavigationDecision.prevent;
           }
-        }
+        },
+      ),
     );
   }
 }
