@@ -46,11 +46,11 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-    <string>Access to take a photo by camera</string>
+    <string>プロフィール撮影のためカメラのアクセスを許可します</string>
     <key>NSAppleMusicUsageDescription</key>
-    <string>Access to pick a photo</string>
+    <string>プロフィール選択のため写真アクセスを許可します</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Access to pick a photo</string>
+    <string>プロフィール選択のため写真アクセスを許可します</string>
     <key>LSApplicationQueriesSchemes</key>
     <array>
       <string>https</string>
