@@ -99,6 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
         onWebViewCreated: (WebViewController webViewController) async {
           _controller = webViewController;
         },
+        onPageFinished: (String url) async {
+          await _controller?.evaluateJavascript('onReturnApp();');
+        },
         navigationDelegate: (NavigationRequest request) {
           String wwwUrl = request.url.toString().substring(0, 29);
           String url = request.url.toString().substring(0, 25);
